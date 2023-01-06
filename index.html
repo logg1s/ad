@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>8-Puzzle</title>
+
+    <!-- stylesheets for views -->
+    <link rel="stylesheet" href="css/views/ControlPanel.css">
+    <link rel="stylesheet" href="css/views/PuzzleStateEditor.css">
+    <link rel="stylesheet" href="css/views/PuzzleStateView.css">
+    <link rel="stylesheet" href="css/views/StatsView.css">
+    <link rel="stylesheet" href="css/views/TreeView.css">
+
+    <!-- application css and overrides -->
+    <link rel="stylesheet" href="css/application.css">
+    <!--[if IE]>
+        <link rel="stylesheet" href="css/application-ie.css">
+    <![endif]-->
+
+    <!-- libraries -->
+    <script src="lib/jquery/jquery-1.7.2.min.js"></script>
+    <script src="lib/jquery.simplemodal/jquery.simplemodal-1.4.2.min.js"></script>
+    <script src="lib/jquery.qtip/jquery.qtip-1.0.0-rc3.min.js"></script>
+    <script src="lib/underscore-1.10.2/underscore-min.js"></script>
+    <script src="lib/backbone-1.4.0/backbone-min.js"></script>
+    <script src="lib/buckets/buckets-20120801.min.js"></script>
+
+    <!-- helpers -->
+    <script src="js/helpers/PuzzleStateRenderer.js"></script>
+    <script src="js/helpers/TreeLayout.js"></script>
+    <script src="js/helpers/Util.js"></script>
+
+    <!-- models -->
+    <script src="js/models/ApplicationState.js"></script>
+    <script src="js/models/Configuration.js"></script>
+    <script src="js/models/PuzzleState.js"></script>
+    <script src="js/models/SearchTree.js"></script>
+
+    <!-- uninformed search algorithms -->
+    <script src="js/models/algorithms/BreadthFirstSearch.js"></script>
+    <script src="js/models/algorithms/DepthFirstSearch.js"></script>
+    <script src="js/models/algorithms/IterativeDeepeningSearch.js"></script>
+
+    <!-- informed search algorithms -->
+    <script src="js/models/algorithms/InformedSearch.js"></script>
+    <script src="js/models/algorithms/GreedySearch.js"></script>
+    <script src="js/models/algorithms/AStarSearch.js"></script>
+
+    <!-- views -->
+    <script src="js/views/ApplicationView.js"></script>
+    <script src="js/views/ControlPanel.js"></script>
+    <script src="js/views/PuzzleStateEditor.js"></script>
+    <script src="js/views/PuzzleStateView.js"></script>
+    <script src="js/views/StatsView.js"></script>
+    <script src="js/views/Stepper.js"></script>
+    <script src="js/views/TreeView.js"></script>
+
+    <!-- application -->
+    <script src="js/application.js"></script>
+
+</head>
+
+<body>
+
+    <!-- Markup for the ControlPanel view, and its subviews -->
+    <div id="control_panel">
+        <form>
+            <h1>8-Puzzle</h1>
+
+            <div class="group initial disabled_while_running">
+                <label>
+                    <h3>Trạng thái bắt đầu:</h3>
+                </label>
+                <div class="puzzle_state_view">
+                    <div class="row row_0"><span>
+                        </span>
+                        <div class="cell cell_0_0">
+                            <div class="cell_value">1</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_1_0">
+                            <div class="cell_value">2</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_2_0">
+                            <div class="cell_value">3</div>
+                        </div>
+                    </div>
+                    <div class="row row_1"><span>
+                        </span>
+                        <div class="cell cell_0_1">
+                            <div class="cell_value">4</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_1_1">
+                            <div class="cell_value">5</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_2_1">
+                            <div class="cell_value">6</div>
+                        </div>
+                    </div>
+                    <div class="row row_2"><span>
+                        </span>
+                        <div class="cell cell_0_2">
+                            <div class="cell_value">7</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_1_2">
+                            <div class="cell_value">8</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_2_2">
+                            <div class="cell_value">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <input type="button" value="Sửa"></input>
+                </div>
+            </div>
+
+            <div class="group goal disabled_while_running">
+                <label>
+                    <h3>Trạng thái mục tiêu:</h3>
+                </label>
+                <div class="puzzle_state_view">
+                    <div class="row row_0"><span>
+                        </span>
+                        <div class="cell cell_0_0">
+                            <div class="cell_value">1</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_1_0">
+                            <div class="cell_value">2</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_2_0">
+                            <div class="cell_value">3</div>
+                        </div>
+                    </div>
+                    <div class="row row_1"><span>
+                        </span>
+                        <div class="cell cell_0_1">
+                            <div class="cell_value">4</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_1_1">
+                            <div class="cell_value">5</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_2_1">
+                            <div class="cell_value">6</div>
+                        </div>
+                    </div>
+                    <div class="row row_2"><span>
+                        </span>
+                        <div class="cell cell_0_2">
+                            <div class="cell_value">7</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_1_2">
+                            <div class="cell_value">8</div>
+                        </div><span>
+                        </span>
+                        <div class="cell cell_2_2">
+                            <div class="cell_value">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <input type="button" value="Sửa"></input>
+                </div>
+            </div>
+
+            <div class="group algorithm disabled_while_running">
+                <label>
+                    <h4>Thuật toán tìm kiếm:</h4>
+                </label>
+                <div class="field">
+                    <select></select>
+                    <a href="#"><img src="images/help_icon.gif" class="help"></a>
+                </div>
+                <div class="tooltip_text">
+                    <p>Các thuật toán tìm kiếm đồ thị trong danh sách này thuộc hai loại:</p>
+                    <ul>
+                        <li>Các thuật toán tìm kiếm mù - những thuật toán <em> không sử dụng </em> hàm heuristic
+                        </li>
+                        <li>Các thuật toán tìm kiếm dựa trên kinh nghiệm - những thuật toán sử dụng một số chức năng
+                            heuristic
+                        </li>
+                    </ul>
+                    <p>Xem ghi chú bài giảng của bạn và sách giáo khoa được giao để tìm hiểu thêm về từng thuật toán.
+                    </p>
+                </div>
+            </div>
+
+            <div class="group heuristic disabled_while_running">
+                <label>
+                    <h4> Heuristic - Hàm đánh giá:</h4>
+                </label>
+                <div class="field">
+                    <select></select>
+                    <a href="#"><img src="images/help_icon.gif" class="help"></a>
+                </div>
+                <div class="tooltip_text">
+                    <p>Khi sử dụng một thuật toán dựa trên hiểu biết, chẳng hạn như Tìm kiếm A*, bạn cũng phải chọn một
+                        phương pháp phỏng đoán.
+                    </p>
+                    <p>Bạn có thể chọn một trong ba loại hàm heuristic:
+                    </p>
+                    <ul>
+                        <li>Euclidean Distance- tổng khoảng cách đường thẳng cho mỗi ô không đúng vị trí</li>
+                        <li>Manhattan Distance- tổng khoảng cách ngang và dọc cho mỗi ô không đúng vị trí</li>
+                        <li>Tiles-out - số lượng ô không đúng vị trí
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="group mode disabled_while_running">
+                <label>
+                    <h4> Chế độ:</h4>
+                </label>
+                <div class="field">
+                    <select></select>
+                </div>
+            </div>
+
+            <div class="group stepper">
+                <div class="field burst_mode">
+                    <input type="button" value="GIẢI" class="start"></input>
+                    <input type="button" value="TIẾP TỤC" class="resume invisible"></input>
+                    <input type="button" value="Quay lại" class="back invisible"></input>
+                    <input type="button" value="Tiếp" class="next invisible"></input>
+                    <input type="button" value="Dừng" class="pause invisible"></input><br />
+                    <input type="button" value="Xóa" class="reset"></input>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Markup for the PuzzleStateEditor view -->
+    <div id="puzzle_state_editor">
+        <div class="grid">
+            <div class="row row_0"><span>
+                </span>
+                <div class="cell cell_0_0">
+                    <div class="cell_value">7</div>
+                </div><span>
+                </span>
+                <div class="cell cell_1_0">
+                    <div class="cell_value">7</div>
+                </div><span>
+                </span>
+                <div class="cell cell_2_0">
+                    <div class="cell_value">7</div>
+                </div>
+            </div><span>
+            </span>
+            <div class="row row_1"><span>
+                </span>
+                <div class="cell cell_0_1">
+                    <div class="cell_value">7</div>
+                </div><span>
+                </span>
+                <div class="cell cell_1_1">
+                    <div class="cell_value">7</div>
+                </div><span>
+                </span>
+                <div class="cell cell_2_1">
+                    <div class="cell_value">7</div>
+                </div>
+            </div><span>
+            </span>
+            <div class="row row_2"><span>
+                </span>
+                <div class="cell cell_0_2">
+                    <div class="cell_value">7</div>
+                </div><span>
+                </span>
+                <div class="cell cell_1_2">
+                    <div class="cell_value">7</div>
+                </div><span>
+                </span>
+                <div class="cell cell_2_2">
+                    <div class="cell_value">7</div>
+                </div>
+            </div>
+        </div><br />
+        <input type="button" value="Save changes" class="save"></input><a href="#">Discard</a>
+    </div>
+
+    <!-- Markup for the TreeView view -->
+    <div id="tree_view">
+        <canvas class="main"></canvas>
+        <div id="viewport">
+            <div id="fakescrolldiv"></div>
+        </div>
+    </div>
+
+    <div id="tutorial" style="display: none;">
+        <div id="content">
+            <h1>8-Puzzle</h1>
+            <p>Ứng dụng web này cho phép bạn xem biểu diễn đồ họa của một loạt các thuật toán tìm kiếm đồ thị khác nhau,
+                đồng thời giải các bài toán 8 câu đố do bạn lựa chọn.</p>
+            <h2>Bắt đầu
+            </h2>
+            <p>Ở phía bên trái của ứng dụng này, bạn sẽ thấy <em> Bảng điều khiển</em>. Sử dụng <em> Bảng điều
+                    khiển</em>, bạn có thể định cấu hình các khía cạnh sau của ứng dụng:
+            </p>
+            <ul>
+                <li>Trạng thái bắt đầu và Trạng thái mục tiêu
+                </li>
+                <li>Lựa chọn thuật toán tìm kiếm
+                </li>
+                <li>Sử dụng hàm đánh giá Heuristic nào, nếu sử dụng Thuật toán Tìm kiếm dựa trên kinh nghiệm
+                </li>
+                <li>Và sử dụng chế độ giải một bước hay chế độ liên tục
+                </li>
+            </ul>
+            <p>Mỗi tùy chọn này sẽ được mô tả chi tiết hơn bên dưới.
+            </p>
+            <h3>Trạng thái bắt đầu và Trạng thái mục tiêu</h3>
+            <p>Để đặt trạng thái Bắt đầu hoặc Mục tiêu, bạn có thể nhấp vào nút 'Sửa' hoặc biểu diễn đồ họa của trạng thái.
+            </p>
+            <p>Bạn sẽ thấy một cửa sổ hiện lên như sau:
+            </p>
+            <img src="images/choose-state.png" width="130" height="161">
+            <p>Để thay đổi một ô, chỉ cần nhấp vào ô mà bạn muốn thay thế, sau đó nhập giá trị mới trên bàn phím của bạn. Thao tác này sẽ hoán đổi ô xếp với ô trước đó và giữ giá trị của ô đó.
+            </p>
+            <h3>Thuật Toán Tìm Kiếm</h3>
+            <p>8-Puzzle hỗ trợ năm thuật toán tìm kiếm dựa trên đồ thị khác nhau. Ba thuật toán đầu tiên là Thuật toán tìm kiếm không có thông tin (Tìm kiếm mù) :
+            </p>
+            <ul>
+                <li>Breadth-first Search - Tìm kiếm theo chiều rộng</li>
+                <li>Depth-first Search - Tìm kiếm theo chiều sâu</li>
+                <li>Iterative Deepening Search - Tìm kiếm đào sâu lặp lại</li>
+            </ul>
+            <p>Hai thuật toán dựa trên kinh nghiệm:</p>
+            <ul>
+                <li>A* Search - Tìm kiếm A*</li>
+                <li>Greedy Search - Tìm kiếm tham lam</li>
+            </ul>
+            <p>Nếu bạn chọn Thuật toán tìm kiếm dựa trên kinh nghiệm, thì bạn cũng sẽ cần chọn Hàm đánh giá - heuristic.
+            </p>
+            <h3>Heuristic Function - Hàm đánh giá</h3>
+            <p>8-Puzzle hỗ trợ 3 loại hàm đánh giá:</p>
+            <ul>
+                <li>Euclidean Distance</li>
+                <li>Manhattan Distance (City-Block distance)</li>
+                <li>Tiles Out-of-place</li>
+            </ul>
+            <h3>1 bước hoặc liên tục</h3>
+            <p>8-Puzzle có thể chạy với 1 trong 2 chế độ. Chế độ mặc định là Chế độ một bước, cho phép bạn 'xem từng bước' tìm kiếm, từng bước một. Điều này hữu ích để hiểu rõ hơn về cách một Thuật toán tìm kiếm làm việc.</p>
+            <p>Chế độ khác là Chế độ liên tục. Sau khi bắt đầu, Chế độ liên tục tiếp tục chạy tìm kiếm cho đến khi tìm thấy trạng thái mục tiêu. Có thể tạm dừng tìm kiếm. Chế độ liên tục nhưng không thể quay lại các bước trước.</p>
+            <h2>Cây tìm kiếm</h2>
+            <h3>Mô tả trạng thái</h3>
+            <p>Trong khi tìm kiếm đang hoạt động, bạn sẽ có thể xem biểu diễn trực quan của cây tìm kiếm. Mỗi nút trong cây tìm kiếm này đại diện cho sự sắp xếp của các ô xếp (hoặc trạng thái) và được vẽ dưới dạng một hộp được chia thành 4 phần.
+            </p>
+            <p>Sơ đồ sau đây cho thấy một nút được lấy từ tìm kiếm Tham lam - 
+                Greedy search:</p>
+            <img src="images/state-representation.png">
+            <p>Phần lớn nhất là trạng thái câu đố. Dưới đây bạn sẽ thấy hai phần nhỏ hơn.
+            </p>
+            <p>Bên dưới trạng thái câu đố là hai phần. Phần bên trái là <em>độ sâu</em> của nút. Phần bên phải là điểm heuristic. Điểm số heuristic chỉ được sử dụng với các thuật toán tìm kiếm được thông báo, vì vậy nếu bạn đang sử dụng Tìm kiếm theo chiều rộng, chiều sâu trước hoặc Tìm kiếm sâu lặp lại, thì điểm số heuristic sẽ bị bỏ qua.
+            </p>
+            <p>Phần cuối cùng ghi lại thứ tự các nút được mở rộng. Ví dụ: nút gốc sẽ luôn là '#1' và nút tiếp theo được mở rộng sẽ được đánh dấu là '#2'.
+            </p>
+            <h3>Màu Sắc</h3>
+            <p>Để giúp Cây tìm kiếm 'dễ đọc' hơn, đường viền của mỗi nút được mã hóa màu dựa trên trạng thái hiện tại của nó.
+            </p>
+            <p>Sơ đồ sau đây cho thấy thuật toán A* (với hàm đánh giá: khoảng cách Euclide) được áp dụng cho một vấn đề có thể được giải chỉ trong hai lần di chuyển:
+            </p>
+            <img src="images/astar-steps.png">
+            <p>Màu sắc có thể được hiểu như sau:
+            </p>
+            <table>
+                <tr>
+                    <th>Màu</th>
+                    <th>Giải thích</th>
+                </tr>
+                <tr>
+                    <td style="color:blue">Xanh dương</td>
+                    <td>Nếu một nút nằm trong Danh sách mở thì nút đó sẽ được đánh dấu bằng màu xanh dương.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: red;">Đỏ</td>
+                    <td>Sau mỗi lần lặp lại thuật toán tìm kiếm, nút sẽ được mở rộng tiếp theo sẽ được đánh dấu màu đỏ. Điều này áp dụng ngay cả khi nút mục tiêu đã được tìm thấy.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: grey;">Xám</td>
+                    <td>Nếu một trạng thái đã được khám phá, trạng thái đó sẽ chuyển sang màu xám. Ví dụ: trong bước 2) của sơ đồ trên, trạng thái ban đầu có màu xám để biểu thị rằng nó đã được duyệt. Ở bước 3), một nút đại diện cho trạng thái ban đầu được duyệt lại nhưng nó sẽ không được mở rộng vì trạng thái ban đầu đã được mở rộng thông qua nút gốc.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: yellowgreen;">Xanh lá</td>
+                    <td>Khi trạng thái mục tiêu đã được tìm thấy, nó sẽ được đánh dấu bằng màu xanh lá cây.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: #fdbe00;">Vàng</td>
+                    <td>Khi một nút đại diện cho trạng thái mục tiêu đã được tìm thấy, bất kỳ nút nào trên đường dẫn trở lại nút gốc sẽ được đánh dấu bằng vàng.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: purple;">Tím</td>
+                    <td>Khi sử dụng Tìm kiếm đào sâu lặp lại, các nút chưa được khám phá vượt quá độ sâu tối đa sẽ không được thêm vào danh sách mở. Các nút này sẽ có màu tím.
+                    </td>
+                </tr>
+            </table>
+            <h3>Danh sách mở và đóng
+            </h3>
+            <p>Trong khi các thuật toán tìm kiếm đang chạy, hai danh sách được duy trì. Đầu tiên là Danh sách mở - danh sách này được sử dụng để theo dõi các nút đã được phát hiện nhưng chưa được khám phá.
+            </p>
+            <p>Thứ hai là Danh sách đã đóng - danh sách này được sử dụng để theo dõi các nút đã được khám phá hoặc các nút sẽ không được khám phá vì chúng đại diện cho các trạng thái đã được khám phá qua các nút khác.
+
+            </p>
+            <p>Khi tìm kiếm đang hoạt động, số nút trong Danh sách Mở và Đã Đóng sẽ hiển thị ở góc trên cùng bên trái:
+            </p>
+            <img src="images/stats.png">
+            <h2>Nguồn tham khảo</h2>
+            <p>8-Puzzle được phát triển bởi Tristan Penman. Mã nguồn có thể được tìm thấy tại <a
+                    href="https://github.com/tristanpenman/N-Puzzle">Github</a></p>
+        </div>
+    </div>
+
+    <!-- Markup for StatsView -->
+    <div id="stats_view" class="invisible">
+    </div>
+
+</body>
+
+</html>
